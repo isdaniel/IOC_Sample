@@ -56,8 +56,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FieldAttribute.cs" />
+    <Compile Include="FunctionAttribute.cs" />
+    <Compile Include="ILogService.cs" />
+    <Compile Include="IUserService.cs" />
+    <Compile Include="LogFilter.cs" />
+    <Compile Include="LogInterceptor.cs" />
+    <Compile Include="LogModel.cs" />
+    <Compile Include="LogService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserModel.cs" />
+    <Compile Include="UserService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

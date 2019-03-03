@@ -11,6 +11,8 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
+using static System.Convert;
+
 namespace AutofacWihtAOP
 {
     public interface ITimeService
@@ -69,6 +71,7 @@ namespace AutofacWihtAOP
 
     class Program
     {
+
         static void Main(string[] args)
         {
 
@@ -76,9 +79,17 @@ namespace AutofacWihtAOP
 
             IPerson person = container.Resolve<IPerson>();
 
-            Console.WriteLine(person.SaySomething());
-            Thread.Sleep(5000);
-            Console.WriteLine(person.SaySomething());
+            //Console.WriteLine(person.SaySomething());
+            //Thread.Sleep(5000);
+            //Console.WriteLine(person.SaySomething());
+
+            IUserService personService = container.Resolve<IUserService>();
+
+            personService.ModifyUserInfo(new UserModel()
+            {
+                Birthday = DateTime.Now,
+                Phone = "0911181212"
+            });
 
             Console.ReadKey();
         }
@@ -88,11 +99,20 @@ namespace AutofacWihtAOP
             var builder = new ContainerBuilder();
 
             builder.RegisterType<TimeInterceptor>(); //註冊攔截器
+            builder.RegisterType<LogInterceptor>(); //註冊攔截器
+
+            builder.RegisterType<LogService>()
+                .As<ILogService>();
 
             builder.RegisterType<Person>()
                     .As<IPerson>()
                     .EnableInterfaceInterceptors();
 
+            builder.RegisterType<UserService>()
+                .As<IUserService>()
+                .EnableInterfaceInterceptors();
+
+            
             //註冊時間Service
             builder.RegisterType<TimeService>().As<ITimeService>();
 
