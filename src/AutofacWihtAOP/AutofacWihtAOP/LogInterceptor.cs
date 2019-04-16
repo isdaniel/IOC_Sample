@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using AutofacWihtAOP;
 using Castle.DynamicProxy;
+using Xuenn.Lib.CommonUtility.Interceptors;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
-    public class LogInterceptor : IInterceptor
+
+    public class LogInterceptor : InterceptorBase
     {
         private ILogService _logService;
 
@@ -16,42 +19,42 @@ namespace AutofacWihtAOP
             _logService = logservice;
         }
 
-        public void Intercept(IInvocation invocation)
+        protected override void OnExcuted(IInvocation invocation)
         {
             var models = invocation.Arguments.Where(Ext.IsAttributeType<FunctionAttribute>);
 
-            var selectMany = models.SelectMany(x=> x.GetType().GetPropertiesBy<FieldAttribute>(), 
-                (model,prop)=> new
+            var props = models.SelectMany(x => x.GetType().GetPropertiesBy<FieldAttribute>(),
+                (model, prop) => new
                 {
                     CurrentValue = prop.GetValue(model),
-                    FieldName = prop.GetAttributeValue((FieldAttribute z) => z.Name),
+                    FieldName = prop
+                        .GetAttributeValue((FieldAttribute attr) => attr.Name),
                     functionName = model.GetType()
-                        .GetAttributeValue((FunctionAttribute attr) => attr.Name)
+                        .GetAttributeValue((FunctionAttribute attr) => attr.FunctionName)
                 });
 
-            foreach (var prop in selectMany)
+            foreach (var prop in props)
             {
-                
-                var lastLog = _logService.GetLastLog(new LogFilter()
+
+                AuditLogModel lastLog = _logService.GetLastLog(new LogFilter()
                 {
                     FieldName = prop.FieldName,
-                    FunctionName = prop.functionName
+                    FunctionName = prop.functionName,
+                    UserCode = "Dnaiel"
                 });
 
-                var logModel = new LogModel()
+                AuditLogModel logModel = new AuditLogModel()
                 {
                     UserCode = "Dnaiel",
                     FunctionName = prop.functionName,
                     FieldName = prop.FieldName,
-                    NewValue = prop.CurrentValue?.ToString()
+                    NewValue = prop.CurrentValue?.ToString(),
+                    OldValue = lastLog != null ? lastLog.NewValue :string.Empty
                 };
 
-                if (lastLog != null)
-                    logModel.OldValue = lastLog.NewValue;
-                else
-                    logModel.OldValue = string.Empty;
-
-                _logService.AddLog(logModel);
+                if (logModel?.NewValue != logModel.OldValue)
+                    _logService.AddLog(logModel);
+              
             }
         }
     }

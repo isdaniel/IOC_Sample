@@ -1,21 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using AutofacWihtAOP;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
     public class LogService : ILogService
     {
-        List<LogModel> _list = new List<LogModel>();
+        List<AuditLogModel> _list = new List<AuditLogModel>();
 
-        public LogModel GetLastLog(LogFilter filter)
+        public AuditLogModel GetLastLog(LogFilter filter)
         {
             return _list.OrderBy(x => x.CreateDate)
-                .FirstOrDefault(x=>
-                    x.FieldName == filter.FieldName && 
-                    x.FunctionName == filter.FunctionName );
+                        .FirstOrDefault(filter.LogCondition);
         }
 
-        public void AddLog(LogModel model)
+        public void AddLog(AuditLogModel model)
         {
             _list.Add(model);
         }

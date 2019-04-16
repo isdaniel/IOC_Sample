@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
-    [Function(Name = "Login")]
+    [Function(FunctionName = "Login")]
     public class UserModel
     {
         [Field(Name = "Phone")]

@@ -13,7 +13,7 @@ using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
 using static System.Convert;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
     public interface ITimeService
     {
@@ -91,6 +91,13 @@ namespace AutofacWihtAOP
                 Phone = "0911181212"
             });
 
+
+            personService.ModifyUserInfo(new UserModel()
+            {
+                Birthday = DateTime.Now,
+                Phone = "0911181212"
+            });
+
             Console.ReadKey();
         }
 
@@ -101,12 +108,13 @@ namespace AutofacWihtAOP
             builder.RegisterType<TimeInterceptor>(); //註冊攔截器
             builder.RegisterType<LogInterceptor>(); //註冊攔截器
 
-            builder.RegisterType<LogService>()
-                .As<ILogService>();
-
             builder.RegisterType<Person>()
                     .As<IPerson>()
                     .EnableInterfaceInterceptors();
+
+            builder.RegisterType<LogService>()
+                .As<ILogService>().SingleInstance()
+                .EnableInterfaceInterceptors();
 
             builder.RegisterType<UserService>()
                 .As<IUserService>()

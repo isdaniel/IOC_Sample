@@ -1,9 +1,10 @@
 ﻿using System;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
     public class FunctionAttribute : Attribute
     {
-        public string Name { get; set; }
+        public string FunctionName { get; set; }
+        public string FunctionType { get; set; }
     }
 }
