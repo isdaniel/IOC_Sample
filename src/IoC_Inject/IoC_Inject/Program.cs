@@ -13,14 +13,16 @@ namespace IoC_Inject
     {
         void Walk();
 
-        void Walk(TextWriter writer);
+        void SetWriter(TextWriter writer);
     }
 
     public class Person : IWalkable
     {
         private readonly TextWriter _writer;
 
-        public TextWriter WriterProp { get; set; }
+        public TextWriter WriterProp { private get; set; }
+
+        private TextWriter _writerMethod;
 
 
         public Person(TextWriter w)
@@ -32,11 +34,12 @@ namespace IoC_Inject
         {
             _writer.WriteLine("constructor walk");
             WriterProp.WriteLine("property walk");
+            _writerMethod.Write("method walk");
         }
 
-        public void Walk(TextWriter writer)
+        public void SetWriter(TextWriter writer)
         {
-            writer.WriteLine("walk by parameter");
+            _writerMethod = writer;
         }
     }
 
@@ -67,7 +70,7 @@ namespace IoC_Inject
             {
                var writer = e.Context.Resolve<TextWriter>();
                e.Instance.WriterProp = writer;
-               e.Instance.Walk(writer);
+               e.Instance.SetWriter(writer);
             });
 
             return builder.Build();
