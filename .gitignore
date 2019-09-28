@@ -8,3 +8,5 @@ project.lock.json
 /**/.idea
 /src/packages
 /src/CsvHelper.Excel.userprefs
+/src/AutofacWihtAOP/packages
+/src/IoC/packages
