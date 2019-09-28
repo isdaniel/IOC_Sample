@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
     [Function(Name = "Login")]
     public class UserModel

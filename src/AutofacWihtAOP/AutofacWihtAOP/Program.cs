@@ -1,74 +1,21 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Builder;
+using Autofac.Core;
 using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
-using static System.Convert;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
-    public interface ITimeService
-    {
-        string GetTime();
-    }
-
-    public class TimeService : ITimeService
-    {
-        public string GetTime()
-        {
-            return DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss");
-        }
-    }
-
-    public class TimeInterceptor : IInterceptor
-    {
-        private ITimeService _timeService;
-        public TimeInterceptor(ITimeService s)
-        {
-            
-            _timeService = s;
-        }
-
-        public void Intercept(IInvocation invocation)
-        {
-            var time = CallContext.GetData("time")?.ToString();
-            if (time == null)
-            {
-                //如果沒有快取 執行呼叫Service
-                invocation.Proceed();
-                CallContext.SetData("time", invocation.ReturnValue);
-            }
-            else
-            {
-                //如果有快取直接取值
-                invocation.ReturnValue = time;
-            }
-        }
-    }
-
-    [Intercept(typeof(TimeInterceptor))]
-    public class Person : IPerson
-    {
-        public string SaySomething()
-        {
-            return DateTime.Now.ToLongTimeString();
-        }
-    }
-
-    public interface IPerson
-    {
-        string SaySomething();
-    }
-
-
     class Program
     {
 
@@ -79,12 +26,11 @@ namespace AutofacWihtAOP
 
             IPerson person = container.Resolve<IPerson>();
 
-            //Console.WriteLine(person.SaySomething());
-            //Thread.Sleep(5000);
-            //Console.WriteLine(person.SaySomething());
+            Console.WriteLine(person.SaySomething());
+            Thread.Sleep(5000);
+            Console.WriteLine(person.SaySomething());
 
             IUserService personService = container.Resolve<IUserService>();
-
             personService.ModifyUserInfo(new UserModel()
             {
                 Birthday = DateTime.Now,
@@ -98,25 +44,65 @@ namespace AutofacWihtAOP
         {
             var builder = new ContainerBuilder();
 
-            builder.RegisterType<TimeInterceptor>(); //註冊攔截器
-            builder.RegisterType<LogInterceptor>(); //註冊攔截器
+            //將Assembly所有實現IInterceptor註冊入IOC容器中
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .AssignableTo(typeof(IInterceptor));
 
-            builder.RegisterType<LogService>()
-                .As<ILogService>();
-
-            builder.RegisterType<Person>()
-                    .As<IPerson>()
-                    .EnableInterfaceInterceptors();
-
-            builder.RegisterType<UserService>()
-                .As<IUserService>()
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .AsImplementedInterfaces()
                 .EnableInterfaceInterceptors();
 
-            
-            //註冊時間Service
-            builder.RegisterType<TimeService>().As<ITimeService>();
+            //builder.RegisterType<UserService>()
+            //    .As<IUserService>()
+            //    .InterceptedBy(builder, 
+            //        new 
+            //            InterceptionData() { InterceptionType = typeof(LogInterceptor) }, 
+            //        new InterceptionData(){ InterceptionType = typeof(CacheInterceptor) });
 
             return builder.Build();
+        }
+    }
+
+    public class InterceptionData
+    {
+        public Type InterceptionType { get; set; }
+        public IEnumerable<Parameter> Parameters { get; set; } = new List<Parameter>();
+    }
+
+    public static class InterceptionExtensions
+    {
+        public static IRegistrationBuilder<TLimit, ConcreteReflectionActivatorData, TRegistrationStyle>
+            InterceptedBy<TLimit, TRegistrationStyle>(
+                this IRegistrationBuilder<TLimit, ConcreteReflectionActivatorData, TRegistrationStyle> registration,
+                ContainerBuilder builder,
+                params InterceptionData[] datas)
+        {
+
+            registration.EnableInterception();
+
+            var interceptions = datas.Where(x => typeof(IInterceptor).IsAssignableFrom(x.InterceptionType));
+
+            registration.InterceptedBy(interceptions.Select(x => x.InterceptionType.FullName).ToArray());
+
+            foreach (var data in datas)
+            {
+                builder.RegisterType(data.InterceptionType)
+                    .WithProperties(data.Parameters)
+                    .Named<IInterceptor>(data.InterceptionType.FullName);
+            }
+
+            return registration;
+        }
+
+        private static void EnableInterception<TLimit, TRegistrationStyle>(this IRegistrationBuilder<TLimit, ConcreteReflectionActivatorData, TRegistrationStyle> registration)
+        {
+            //判斷註冊type是否是Interface
+            if (registration.RegistrationData
+                .Services
+                .OfType<IServiceWithType>().Any(x => x.ServiceType.IsInterface))
+                registration.EnableInterfaceInterceptors();
+            else
+                registration.EnableClassInterceptors();
         }
     }
 }

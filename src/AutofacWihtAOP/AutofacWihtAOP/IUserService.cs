@@ -1,4 +1,4 @@
-﻿namespace AutofacWihtAOP
+﻿namespace AutofacWithAOP
 {
     public interface IUserService
     {

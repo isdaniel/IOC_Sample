@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
     public class LogModel
     {

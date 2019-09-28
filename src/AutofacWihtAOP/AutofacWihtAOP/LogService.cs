@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
     public class LogService : ILogService
     {
