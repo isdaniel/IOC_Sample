@@ -1,10 +1,8 @@
-﻿using AutofacWihtAOP;
-
-namespace AutofacWithAOP
+﻿namespace AutofacWithAOP
 {
     public interface ILogService
     {
-        AuditLogModel GetLastLog(LogFilter filter);
-        void AddLog(AuditLogModel model);
+        string GetLastLog(LogFilter filter);
+        void AddLog(string message);
     }
 }

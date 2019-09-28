@@ -2,7 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace AutofacWihtAOP
+namespace AutofacWithAOP
 {
     public class AuditLogModel
     {

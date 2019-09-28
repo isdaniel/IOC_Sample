@@ -5,11 +5,11 @@ namespace AutofacWithAOP
 {
     [Intercept(typeof(CacheInterceptor))]
     [Intercept(typeof(LogInterceptor))]
-    public class UserService:IUserService
+    public class Person : IPerson
     {
-        public virtual void ModifyUserInfo(UserModel model)
+        public string SaySomething()
         {
-            Console.WriteLine("UserService Value");
+            return DateTime.Now.ToLongTimeString();
         }
     }
 }
